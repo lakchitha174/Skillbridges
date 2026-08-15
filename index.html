@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1">
+
+  <meta
+    name="description"
+    content="SkillBridge student career readiness platform">
+
+  <title>Sign in | SkillBridge</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body class="auth-page">
+
+
+  <main class="auth-shell">
+
+
+    <!-- ===================================================
+         BRAND PANEL
+    ==================================================== -->
+
+    <section
+      class="brand-panel"
+      aria-label="SkillBridge introduction">
+
+      <a
+        class="brand"
+        href="index.html"
+        aria-label="SkillBridge home">
+
+        <span class="brand-mark">S</span>
+
+        SkillBridge
+
+      </a>
+
+
+      <div class="brand-copy">
+
+        <p class="eyebrow">
+          YOUR CAREER, CONNECTED
+        </p>
+
+
+        <h1>
+
+          Build skills.
+
+          <br>
+
+          <em>Reach</em>
+
+          further.
+
+        </h1>
+
+
+        <p>
+
+          One calm space to measure your
+          readiness, connect with mentors,
+          and make your next career move count.
+
+        </p>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span class="stat-icon">
+          ↗
+        </span>
+
+        <div>
+
+          <strong>87%</strong>
+
+          <small>
+            of learners improved their readiness
+          </small>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         LOGIN PANEL
+    ==================================================== -->
+
+    <section class="form-panel">
+
+      <div class="form-wrap">
+
+
+        <p class="eyebrow accent">
+          WELCOME BACK
+        </p>
+
+
+        <h2>
+          Sign in to SkillBridge
+        </h2>
+
+
+        <p class="muted">
+          Continue building a career you're proud of.
+        </p>
+
+
+        <form
+          id="loginForm"
+          novalidate>
+
+
+          <!-- =================================================
+               EMAIL
+          ================================================== -->
+
+          <label for="loginEmail">
+            Email address
+          </label>
+
+          <input
+            id="loginEmail"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required>
+
+
+
+          <!-- =================================================
+               PASSWORD
+          ================================================== -->
+
+          <label for="loginPassword">
+            Password
+          </label>
+
+
+          <div class="password-field">
+
+            <input
+              id="loginPassword"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              required>
+
+
+            <button
+              class="visibility-toggle"
+              id="loginPasswordToggle"
+              type="button"
+              aria-label="Show password"
+              aria-pressed="false">
+
+              Show
+
+            </button>
+
+          </div>
+
+
+
+          <!-- =================================================
+               MESSAGE
+          ================================================== -->
+
+          <p
+            id="formMessage"
+            class="form-message"
+            role="alert"
+            aria-live="polite">
+          </p>
+
+
+
+          <!-- =================================================
+               LOGIN BUTTON
+          ================================================== -->
+
+          <button
+            class="primary-button"
+            type="submit">
+
+            Sign in
+
+            <span>→</span>
+
+          </button>
+
+
+        </form>
+
+
+
+        <!-- =================================================
+             REGISTER LINK
+        ================================================== -->
+
+        <p class="auth-switch">
+
+          New to SkillBridge?
+
+          <a href="register.html">
+            Create an account
+          </a>
+
+        </p>
+
+
+        <p class="demo-note">
+
+          First time here?
+          Register to create your local demo account.
+
+        </p>
+
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- =====================================================
+       SKILLBRIDGE LOGIN SCRIPT
+  ====================================================== -->
+
+  <script>
+
+    /* =====================================================
+       STORAGE KEYS
+    ===================================================== */
+
+    const USERS_KEY = "skillbridge_users";
+
+    const SESSION_KEY = "skillbridge_session";
+
+    const PROFILE_KEY = "skillbridgeProfile";
+
+
+
+    /* =====================================================
+       DOM ELEMENTS
+    ===================================================== */
+
+    const loginForm =
+      document.getElementById("loginForm");
+
+    const loginEmail =
+      document.getElementById("loginEmail");
+
+    const loginPassword =
+      document.getElementById("loginPassword");
+
+    const formMessage =
+      document.getElementById("formMessage");
+
+    const visibilityButton =
+      document.getElementById("loginPasswordToggle");
+
+
+
+    /* =====================================================
+       SHOW MESSAGE
+    ===================================================== */
+
+    function showMessage(message, type) {
+
+      if (!formMessage) {
+        return;
+      }
+
+      formMessage.textContent = message;
+
+      formMessage.className =
+        "form-message " + type;
+
+    }
+
+
+
+    /* =====================================================
+       NORMALIZE EMAIL
+    ===================================================== */
+
+    function normalizeEmail(email) {
+
+      return String(email || "")
+        .trim()
+        .toLowerCase();
+
+    }
+
+
+
+    /* =====================================================
+       READ USERS
+    ===================================================== */
+
+    function getUsers() {
+
+      try {
+
+        const data =
+          localStorage.getItem(USERS_KEY);
+
+
+        if (!data) {
+
+          return {};
+
+        }
+
+
+        const users =
+          JSON.parse(data);
+
+
+        if (
+          !users ||
+          typeof users !== "object" ||
+          Array.isArray(users)
+        ) {
+
+          return {};
+
+        }
+
+
+        return users;
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Unable to read users:",
+          error
+        );
+
+        return {};
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       PASSWORD SHOW / HIDE
+    ===================================================== */
+
+    if (
+      visibilityButton &&
+      loginPassword
+    ) {
+
+      visibilityButton.addEventListener(
+        "click",
+        function () {
+
+          const isPassword =
+            loginPassword.type === "password";
+
+
+          loginPassword.type =
+            isPassword
+              ? "text"
+              : "password";
+
+
+          visibilityButton.textContent =
+            isPassword
+              ? "Hide"
+              : "Show";
+
+
+          visibilityButton.setAttribute(
+            "aria-label",
+            isPassword
+              ? "Hide password"
+              : "Show password"
+          );
+
+
+          visibilityButton.setAttribute(
+            "aria-pressed",
+            isPassword
+              ? "true"
+              : "false"
+          );
+
+        }
+      );
+
+    }
+
+
+
+    /* =====================================================
+       LOGIN
+    ===================================================== */
+
+    if (loginForm) {
+
+      loginForm.addEventListener(
+        "submit",
+        function (event) {
+
+          event.preventDefault();
+
+
+
+          /* =================================================
+             GET FORM VALUES
+          ================================================== */
+
+          const email =
+            normalizeEmail(
+              loginEmail.value
+            );
+
+
+          const password =
+            loginPassword.value;
+
+
+
+          /* =================================================
+             VALIDATE EMAIL
+          ================================================== */
+
+          if (!email) {
+
+            showMessage(
+              "Please enter your email address.",
+              "error"
+            );
+
+            loginEmail.focus();
+
+            return;
+
+          }
+
+
+
+          if (!loginEmail.checkValidity()) {
+
+            showMessage(
+              "Please enter a valid email address.",
+              "error"
+            );
+
+            loginEmail.focus();
+
+            return;
+
+          }
+
+
+
+          /* =================================================
+             VALIDATE PASSWORD
+          ================================================== */
+
+          if (!password) {
+
+            showMessage(
+              "Please enter your password.",
+              "error"
+            );
+
+            loginPassword.focus();
+
+            return;
+
+          }
+
+
+
+          /* =================================================
+             GET REGISTERED USERS
+          ================================================== */
+
+          const users =
+            getUsers();
+
+
+
+          /* =================================================
+             FIND USER
+          ================================================== */
+
+          let user =
+            users[email];
+
+
+          /*
+             If the registration page stored
+             the email with uppercase letters,
+             search all users safely.
+          */
+
+          if (!user) {
+
+            const matchingKey =
+              Object.keys(users).find(
+                function (key) {
+
+                  return (
+                    normalizeEmail(key) === email
+                  );
+
+                }
+              );
+
+
+            if (matchingKey) {
+
+              user =
+                users[matchingKey];
+
+            }
+
+          }
+
+
+
+          /* =================================================
+             USER NOT FOUND
+          ================================================== */
+
+          if (!user) {
+
+            showMessage(
+              "Account not found. Please register first.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+
+          /* =================================================
+             CHECK PASSWORD
+          ================================================== */
+
+          if (
+            String(user.password) !==
+            String(password)
+          ) {
+
+            showMessage(
+              "Incorrect password.",
+              "error"
+            );
+
+            loginPassword.focus();
+
+            return;
+
+          }
+
+
+
+          /* =================================================
+             USER INFORMATION
+          ================================================== */
+
+          const userEmail =
+            normalizeEmail(
+              user.email || email
+            );
+
+
+          const userName =
+            String(
+              user.name || "Student"
+            ).trim();
+
+
+
+          /* =================================================
+             CREATE SESSION
+          ================================================== */
+
+          const session = {
+
+            email: userEmail,
+
+            name: userName,
+
+            loginAt:
+              new Date().toISOString()
+
+          };
+
+
+          try {
+
+            localStorage.setItem(
+              SESSION_KEY,
+              JSON.stringify(session)
+            );
+
+          }
+
+          catch (error) {
+
+            console.error(
+              "Unable to create session:",
+              error
+            );
+
+            showMessage(
+              "Unable to create login session.",
+              "error"
+            );
+
+            return;
+
+          }
+
+
+
+          /* =================================================
+             USER-SPECIFIC PROFILE KEY
+          ================================================== */
+
+          const profileKey =
+            "skillbridge_profile_" +
+            userEmail;
+
+
+
+          /* =================================================
+             READ EXISTING PROFILE
+          ================================================== */
+
+          let profile = null;
+
+
+          try {
+
+            const savedProfile =
+              localStorage.getItem(
+                profileKey
+              );
+
+
+            if (savedProfile) {
+
+              profile =
+                JSON.parse(
+                  savedProfile
+                );
+
+            }
+
+          }
+
+          catch (error) {
+
+            console.error(
+              "Unable to read profile:",
+              error
+            );
+
+            profile = null;
+
+          }
+
+
+
+          /* =================================================
+             CREATE PROFILE IF NEEDED
+          ================================================== */
+
+          if (
+            !profile ||
+            typeof profile !== "object" ||
+            Array.isArray(profile)
+          ) {
+
+            profile = {
+
+              name: userName,
+
+              email: userEmail,
+
+              phone: "",
+
+              college: "",
+
+              focus: "",
+
+              bio: "",
+
+              updatedAt:
+                new Date().toISOString()
+
+            };
+
+          }
+
+          else {
+
+            /*
+              Keep existing profile information.
+
+              Only make sure the current
+              logged-in user's identity is correct.
+            */
+
+            profile.name =
+              profile.name || userName;
+
+            profile.email =
+              userEmail;
+
+          }
+
+
+
+          /* =================================================
+             SAVE USER-SPECIFIC PROFILE
+          ================================================== */
+
+          try {
+
+            localStorage.setItem(
+              profileKey,
+              JSON.stringify(profile)
+            );
+
+          }
+
+          catch (error) {
+
+            console.error(
+              "Unable to save user profile:",
+              error
+            );
+
+          }
+
+
+
+          /* =================================================
+             COMMON PROFILE KEY
+
+             This is kept only for compatibility
+             with pages that still use:
+             skillbridgeProfile
+          ================================================== */
+
+          try {
+
+            localStorage.setItem(
+              PROFILE_KEY,
+              JSON.stringify(profile)
+            );
+
+          }
+
+          catch (error) {
+
+            console.error(
+              "Unable to save common profile:",
+              error
+            );
+
+          }
+
+
+
+          /* =================================================
+             SUCCESS MESSAGE
+          ================================================== */
+
+          showMessage(
+            "Login successful! Redirecting...",
+            "success"
+          );
+
+
+
+          /* =================================================
+             DISABLE BUTTON DURING REDIRECT
+          ================================================= */
+
+          const submitButton =
+            loginForm.querySelector(
+              'button[type="submit"]'
+            );
+
+
+          if (submitButton) {
+
+            submitButton.disabled = true;
+
+          }
+
+
+
+          /* =================================================
+             REDIRECT
+          ================================================= */
+
+          setTimeout(
+            function () {
+
+              window.location.href =
+                "dashboard.html";
+
+            },
+            500
+          );
+
+        }
+      );
+
+    }
+
+  </script>
+
+
+</body>
+
+</html>
